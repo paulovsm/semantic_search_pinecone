@@ -13,6 +13,11 @@ def hello(request):
 
 def search(request):
     query_string = request.GET.get("query")
+    result_list = []
+
+    if query_string is None or query_string == "":
+        return JsonResponse(result_list, safe=False)
+
     # initialize pinecone
     pinecone.init(
         api_key=os.getenv("PINECONE_API_KEY"),  # find at app.pinecone.io
@@ -25,9 +30,7 @@ def search(request):
     docsearch = Pinecone.from_existing_index(index_name, embeddings)
 
     #query = "Try wearing Allen Edmonds Men's Park Avenue Cap-Toe Oxfords. These black, classic leather shoes are handcrafted and made with high attention to detail. Their sleek, lace-up design adds a formal and quintessential look to any outfit."
-    docs = docsearch.similarity_search(query_string, 1)
-
-    result_list = []
+    docs = docsearch.similarity_search(query_string, 10)
 
     for doc in docs:
         result_list.append({"page_content": doc.page_content, "metadata": doc.metadata})
